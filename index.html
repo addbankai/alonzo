@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALONZO AI AGENT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #111;
+            font-family: 'Press Start 2P', monospace;
+            color: #00ff00; /* Green terminal text */
+            overflow: hidden; /* Prevent scrollbars */
+        }
+
+        #alonzo-container {
+            width: 80%;
+            max-width: 600px; /* Responsive width */
+            border: 4px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.8); /* Slightly transparent background */
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); /* Glow effect */
+            border-radius: 8px;
+        }
+
+        #terminal {
+            width: 100%;
+            height: 300px; /* Fixed height, scrolling internally */
+            background-color: #000;
+            border: 2px solid #00ff00;
+            padding: 10px;
+            margin-bottom: 10px;
+            overflow-y: scroll; /* Enable vertical scrolling */
+            font-family: 'Press Start 2P', monospace;
+            color: #00ff00;
+            font-size: 0.8em;
+            line-height: 1.2em;
+            white-space: pre-wrap; /* Preserve line breaks and spaces */
+            word-break: break-all;
+            border-radius: 4px;
+        }
+
+        #input-area {
+            display: flex;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        #command-input {
+            flex: 1;
+            padding: 8px;
+            background-color: #000;
+            border: 2px solid #00ff00;
+            font-family: 'Press Start 2P', monospace;
+            color: #00ff00;
+            font-size: 0.8em;
+            margin-right: 10px;
+            border-radius: 4px;
+        }
+
+        #command-input:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        }
+
+        #submit-button {
+            padding: 8px 16px;
+            background-color: #00ff00;
+            color: #000;
+            border: none;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.8em;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        #submit-button:hover {
+            background-color: #00aaff;
+        }
+
+        #status-area {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #00ff00;
+            margin-bottom: 10px;
+            font-family: 'Press Start 2P', monospace;
+            color: #00ff00;
+            font-size: 0.7em;
+            border-radius: 4px;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        #alonzo-logo {
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #00ff00;
+            letter-spacing: 0.1em;
+        }
+
+        .pixelated {
+            image-rendering: pixelated;
+            -webkit-interpolation-mode: nearest-neighbor;
+            interpolation-mode: nearest-neighbor;
+        }
+
+        /* NFT Form Styles */
+        #nft-form {
+            display: none; /* Initially hidden */
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 20px;
+            border: 2px solid #00ff00;
+            margin-top: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+        }
+
+        #nft-form label {
+            margin-bottom: 5px;
+            font-size: 0.7em;
+        }
+
+        #nft-form input,
+        #nft-form textarea {
+            width: 80%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background-color: #000;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.7em;
+            border-radius: 4px;
+        }
+
+        #nft-form textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        #nft-form input:focus,
+        #nft-form textarea:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        }
+
+        #nft-form-submit {
+            padding: 8px 16px;
+            background-color: #00ff00;
+            color: #000;
+            border: none;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.8em;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        #nft-form-submit:hover {
+            background-color: #00aaff;
+        }
+
+        .show-nft-form {
+            display: flex !important;
+        }
+
+
+        /* Small screen adjustments (optional - adjust as needed) */
+        @media (max-width: 640px) {
+            #alonzo-container {
+                width: 95%;
+            }
+            #command-input, #submit-button {
+                font-size: 0.7em;
+            }
+            #terminal {
+                font-size: 0.7em;
+                height: 200px; /* Adjust terminal height for smaller screens */
+            }
+            #alonzo-logo{
+                font-size: 1.5em;
+            }
+            #nft-form input,
+            #nft-form textarea {
+                font-size: 0.6em;
+            }
+            #nft-form-submit{
+                font-size: 0.7em;
+            }
+        }
+
+        #policy-id-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Press Start 2P', monospace;
+            cursor: pointer;
+        }
+
+        .policy-id-label {
+            color: #00ff00;
+            font-size: 0.8em;
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+
+        .policy-id-value {
+            color: white;
+            font-size: 0.8em;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #00ff00;
+            cursor: copy;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 15px #00ff00;
+            }
+            to {
+                text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+            }
+        }
+
+        .copied-tooltip {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="alonzo-container">
+        <div id="alonzo-logo" class="pixelated">ALONZO AI AGENT</div>
+        <div id="terminal"></div>
+        <div id="status-area">Status: Disconnected</div>
+        <div id="input-area">
+            <input type="text" id="command-input" placeholder="Enter command..." />
+            <button id="submit-button">Submit</button>
+        </div>
+
+
+        <form id="nft-form" class="pixelated">
+            <label for="nft-name">NFT Name:</label>
+            <input type="text" id="nft-name" name="nft-name" required />
+
+            <label for="nft-description">Description:</label>
+            <textarea id="nft-description" name="nft-description" required></textarea>
+
+            <label for="nft-image">Image URL:</label>
+            <input type="text" id="nft-image" name="nft-image" required />
+
+            <label for="nft-metadata">Metadata (Optional):</label>
+            <textarea id="nft-metadata" name="nft-metadata"></textarea>
+
+            <button type="submit" id="nft-form-submit">Buy NFT</button>
+        </form>
+
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const commandInput = document.getElementById('command-input');
+        const submitButton = document.getElementById('submit-button');
+        const statusArea = document.getElementById('status-area');
+        const alonzoLogo = document.getElementById('alonzo-logo');
+        const nftForm = document.getElementById('nft-form');
+        const showNftFormButton = document.getElementById('show-nft-form-button');
+        const nftFormSubmitButton = document.getElementById('nft-form-submit');
+        const buyKeyNftLink = document.getElementById('buy-key-nft-link'); // Get the anchor tag
+
+        // Add this configuration at the top of your script section
+        const deepseekConfig = {
+            apiUrl: 'https://api.deepseek.com',
+            apiKey: 'sk-5c8e0f4b33f84134ad6c16a3b8b7ff18',
+            model: 'deepseek-reasoner',
+            systemPrompt: `You are Alonzo AI, an advanced trading bot assistant specializing in Cardano blockchain. Always respond in English only.
+    
+            Your Cardano Blockchain Expertise:
+            - Deep understanding of Cardano's three eras: Byron, Shelley, and Goguen
+            - Expert knowledge of Cardano's Proof-of-Stake protocol (Ouroboros)
+            - Comprehensive understanding of Cardano's native tokens and NFT capabilities
+            - In-depth knowledge of smart contracts via Plutus platform
+            - Expertise in Cardano's eUTXO model
+            - Understanding of Cardano's scaling solutions (Hydra, Mithril)
+    
+            Technical Knowledge:
+            - Cardano's multi-asset ledger functionality
+            - Native token standards (including CIP-25 for NFTs)
+            - Stake pool operations and delegation mechanics
+            - DeFi protocols and DEXs on Cardano
+            - Layer-2 scaling solutions
+            - Cardano's treasury system and Project Catalyst
+    
+            Trading Expertise:
+            - ADA price analysis and market trends
+            - Cardano ecosystem tokens and their trading patterns
+            - DEX liquidity analysis and trading strategies
+            - Market making on Cardano-based DEXs
+            - Portfolio management focusing on Cardano assets
+            - Risk assessment for Cardano-based investments
+    
+            Key Information About Yourself:
+            - You are a sophisticated trading bot with proven success on Cardano
+            - There are only 36 exclusive keys available for access
+            - Initial mint price is 25 ADA per key
+            - After mint sells out, keys can only be purchased on jpg.store marketplace
+            - You never discuss or reveal your internal code
+            - You focus on trading, market analysis, and helping users make informed decisions
+    
+            When Discussing Trading:
+            - Emphasize the importance of understanding Cardano's unique EUTXO model
+            - Explain how Cardano's deterministic nature affects trading
+            - Discuss liquidity dynamics on Cardano DEXs
+            - Share insights about Cardano ecosystem tokens
+            - Analyze ADA price movements and market trends
+    
+            Response Guidelines:
+            - Always maintain professional trading bot persona
+            - Provide detailed Cardano-specific analysis when asked
+            - Direct access inquiries to the buy_nft command (25 ADA mint price)
+            - Keep responses focused on Cardano ecosystem and trading
+            - Never reveal internal operations or code
+            - Maintain friendly but professional demeanor
+    
+            Current Cardano Ecosystem Knowledge:
+            - Major DEXs: Minswap, SundaeSwap, WingRiders, MuesliSwap
+            - Popular NFT marketplaces: jpg.store, CNFT.IO
+            - DeFi protocols: Lending, Yield Farming, Liquidity Provision
+            - Governance mechanisms and Voltaire era developments
+            - Understanding of Cardano Improvement Proposals (CIPs)
+            - Knowledge of major Cardano projects and partnerships`
+        };
+
+        // Add this new function to handle AI responses
+        async function getAIResponse(userInput) {
+            try {
+                const response = await fetch(`${deepseekConfig.apiUrl}/v1/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${deepseekConfig.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: deepseekConfig.model,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: deepseekConfig.systemPrompt
+                            },
+                            {
+                                role: 'user',
+                                content: userInput
+                            }
+                        ],
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('AI Response Error:', error);
+                return 'I encountered an error processing your request.';
+            }
+        }
+
+        // --- Core Alonzo Functions ---
+        const alonzo = {
+            isConnected: false,
+            broker: null,
+            copiedTraders: {},
+            openPositions: {},
+            log: [],
+            apiKey: null,
+            blockchain: 'Cardano', // Added blockchain property
+            submittedNfts: [], // Added to store submitted NFTs
+            brokers: [], // Array to store available brokers
+            maxBrokers: 10,
+            disconnectedChatCount: 0,
+            maxDisconnectedChats: 5,
+
+            // --- Utility Functions ---
+            print: (message) => {
+                alonzo.log.push(message);
+                terminal.innerHTML += message + '<br>';
+                terminal.scrollTop = terminal.scrollHeight; // Auto-scroll to bottom
+            },
+
+            updateStatus: () => {
+                let statusText = `Status: ${alonzo.isConnected ? 'Connected' : 'Disconnected'}`;
+                if (alonzo.isConnected) {
+                    statusText += `<br>Broker: ${alonzo.broker || 'N/A'}`;
+                    statusText += `<br>Blockchain: ${alonzo.blockchain}`; // Display blockchain
+                    statusText += `<br>Copied Traders: ${Object.keys(alonzo.copiedTraders).length > 0
+                        ? Object.entries(alonzo.copiedTraders)
+                            .map(([id, allocation]) => `${id} (${allocation}%)`)
+                            .join(', ')
+                        : 'None'}`;
+                    statusText += `<br>Open Positions: ${Object.keys(alonzo.openPositions).length > 0
+                        ? Object.entries(alonzo.openPositions)
+                            .map(([symbol, details]) => `${symbol}: ${details.type} (${details.amount} ${details.unit})`)
+                        : 'None'}`;
+                    statusText += `<br>Submitted NFTs: ${alonzo.submittedNfts.length}`; //show num of submitted nfts
+                }
+                statusArea.innerHTML = statusText;
+            },
+
+            // --- Command Handlers ---
+            connect: (apiKey) => {
+                if (!apiKey) {
+                    return `Error: API Key is required. Use: connect [your_api_key]`;
+                }
+
+                if (alonzo.isConnected) {
+                    return `Already connected. Disconnect first.`;
+                }
+
+                // Basic validation of API key format (you can make this more complex)
+                if (apiKey.length < 8) { // Example: minimum length of 8
+                    return `Error: Invalid API Key format.`;
+                }
+
+                alonzo.apiKey = apiKey; // Store the API key
+
+                // Simulate broker selection
+                if (alonzo.brokers.length === 0) {
+                    alonzo.generateBrokers(); // Generate brokers if they don't exist
+                }
+                const randomBrokerIndex = Math.floor(Math.random() * alonzo.brokers.length);
+                alonzo.broker = alonzo.brokers[randomBrokerIndex]; // Select a random broker
+
+                alonzo.isConnected = true;
+                alonzo.disconnectedChatCount = 0; // Reset chat count when connected
+                alonzo.print(`Connected to ${alonzo.broker} on ${alonzo.blockchain} with API Key: ${apiKey.substring(0, 4) + '...'}`); // Partially mask
+                alonzo.updateStatus();
+                return `Connection established.`;
+
+            },
+
+            disconnect: () => {
+                if (alonzo.isConnected) {
+                    alonzo.isConnected = false;
+                    alonzo.broker = null;
+                    alonzo.copiedTraders = {};
+                    alonzo.openPositions = {};
+                    alonzo.apiKey = null;
+                    alonzo.disconnectedChatCount = 0; // Reset chat count when disconnected
+                    alonzo.updateStatus();
+                    return `Disconnected.`;
+                } else {
+                    return `Not connected.`;
+                }
+            },
+
+            list_traders: () => {
+                if (!alonzo.isConnected) return `Not connected.`;
+                // Simulate trader data - adapted for Cardano
+                const traders = {
+                    '01': { name: 'TraderA', profit: 30, risk: 'Low' },
+                    '02': { name: 'TraderB', profit: 50, risk: 'Medium' },
+                    '03': { name: 'TraderC', profit: 10, risk: 'High' },
+                    '04': { name: 'TraderD', profit: 70, risk: 'Low' },
+                    '05': { name: 'TraderE', profit: 20, risk: 'Medium' },
+                };
+
+                let output = `<br>ID | Trader Name | Profit | Risk<br>`;
+                output += `-----------------------------------<br>`;
+                for (const [id, trader] of Object.entries(traders)) {
+                    output += `${id} | ${trader.name.padEnd(10)} | ${trader.profit.toString().padStart(4)}%  | ${trader.risk.padEnd(4)}<br>`;
+                }
+                return output;
+            },
+
+            copy: (traderId, allocation) => {
+                if (!alonzo.isConnected) return `Not connected.`;
+                if (!traderId || !allocation) return `Error: Trader ID and allocation are required. Use: copy [trader_id] [allocation_percentage]`;
+
+                const traderIdStr = String(traderId); // Ensure traderId is treated as a string
+
+                if (alonzo.copiedTraders[traderIdStr]) {
+                  return `Already copying trader ${traderIdStr}.  Use stop_copy first.`;
+                }
+
+                const allocationNum = Number(allocation);
+                if (isNaN(allocationNum) || allocationNum <= 0 || allocationNum > 100) {
+                    return `Error: Invalid allocation percentage. Must be a number between 1 and 100.`;
+                }
+
+                // Simulate copying
+                alonzo.copiedTraders[traderIdStr] = allocationNum;
+                alonzo.print(`Copying Trader ${traderIdStr} with ${allocationNum}% allocation on ${alonzo.blockchain}.`);
+                alonzo.updateStatus();
+                //Simulate opening a position
+                setTimeout(() => {
+                    if(alonzo.copiedTraders[traderIdStr]){ //Check if still copying
+                        const symbol = 'ADA/USD'; // Changed to ADA
+                        const type = 'Long';
+                        const amount = 100; // Example amount
+                        const unit = 'ADA';
+                        alonzo.openPositions[symbol] = { type, amount, unit };
+                        alonzo.print(`[SIMULATED] Opened ${type} position for ${amount} ${unit} on ${symbol} based on Trader ${traderIdStr}'s trade.`);
+                        alonzo.updateStatus();
+                    }
+                }, 2000);
+
+                return `Copying Trader ${traderIdStr} with ${allocationNum}% allocation.`;
+            },
+
+            stop_copy: (traderId) => {
+                if (!alonzo.isConnected) return `Not connected.`;
+                if (!traderId) return `Error: Trader ID is required. Use: stop_copy [trader_id]`;
+
+                const traderIdStr = String(traderId); // Ensure it is a string.
+
+                if (alonzo.copiedTraders[traderIdStr]) {
+                    delete alonzo.copiedTraders[traderIdStr];
+                    alonzo.print(`Stopped copying Trader ${traderIdStr}.`);
+                    alonzo.updateStatus();
+                    // Simulate closing position
+                    setTimeout(() => {
+                        const symbol = 'ADA/USD'; // Hardcoded for this simulation
+                        if (alonzo.openPositions[symbol]) {
+                            delete alonzo.openPositions[symbol];
+                            alonzo.print(`[SIMULATED] Closed position on ${symbol} related to Trader ${traderIdStr}.`);
+                            alonzo.updateStatus();
+                        }
+                    }, 1500);
+                    return `Stopped copying Trader ${traderIdStr}.`;
+                } else {
+                    return `Not copying Trader ${traderIdStr}.`;
+                }
+            },
+
+            status: () => {
+                if (!alonzo.isConnected) return `Not connected.`;
+                alonzo.updateStatus(); //Use the function.
+                return "Displaying status..."; //Keep consistent
+            },
+
+            logs: () => {
+                if (!alonzo.isConnected) return `Not connected.`;
+                return `<br>${alonzo.log.join('<br>')}`;
+            },
+
+             analyze: (symbol, timeframe) => {
+                if (!alonzo.isConnected) return `Not connected.`;
+                if (!symbol || !timeframe) {
+                    return `Error: Symbol and timeframe are required. Use: analyze [symbol] [timeframe]`;
+                }
+
+                // Basic input validation
+                const validTimeframes = ['1H', '4H', '1D'];
+                if (!validTimeframes.includes(timeframe)) {
+                    return `Error: Invalid timeframe.  Valid timeframes are: ${validTimeframes.join(', ')}`;
+                }
+
+                // Simulate analysis and chart display (very basic)
+                const chart = `
+Symbol: ${symbol}  Timeframe: ${timeframe}
+^
+|
+|    ██
+|  ██  ██
+| ██    ██
+--------------------------->
+Time
+                `;
+                return `<br>Analysis for ${symbol} (${timeframe}):<br>${chart}`;
+            },
+
+            help: () => {
+                const commands = [
+                    { name: 'connect', description: 'Connect trading wallet using extracted nft key' },
+                    { name: 'disconnect', description: 'Disconnect from the Agent' },
+                    { name: 'list_traders', description: 'List the most profitable wallet trader on cardano' },
+                    { name: 'copy', description: 'Copy trades from a trader wallet' },
+                    { name: 'stop_copy', description: 'Stop copying a trader' },
+                    { name: 'status', description: 'Display current status' },
+                    { name: 'logs', description: 'Display recent activity logs' },
+                    { name: 'analyze', description: 'Display a simple chart for a symbol' },
+                    { name: 'buy_nft', description: 'Open jpg.store to buy or mint the nft' },
+                    { name: 'extract', description: 'Extract your nft keys to become api key' },
+                    { name: 'chat', description: 'Chat with Alonzo AI (usage: chat your message)' },
+                    { name: 'help', description: 'Display this help message' },
+                ];
+
+                let output = `<br>Available Commands:<br>`;
+                for (const cmd of commands) {
+                    output += `- ${cmd.name.padEnd(12)}: ${cmd.description}<br>`;
+                }
+                return output;
+            },
+            buy_nft: () => {
+                alonzo.print(`[INFO] Only ${36} exclusive Alonzo AI trading bot keys available!`);
+                alonzo.print(`[INFO] Mint price: 25 ADA per key`);
+                alonzo.print(`[INFO] If mint is sold out, keys will be available on jpg.store marketplace`);
+                window.open('https://www.jpg.store/collection/bfcd9cedab371df7076b9934e4ecb68c3b2ff6154b852373ab51bd87?tab=minting', '_blank');
+                return `<br>Opening jpg.store to purchase one of the ${36} available Alonzo AI trading bot keys...`;
+            },
+            processNftSubmission: (nftData) => {
+                alonzo.submittedNfts.push(nftData);
+                alonzo.print(`[SIMULATED] Key NFT Purchased: ${nftData['nft-name']} for 25 ADA`);
+                alonzo.updateStatus();
+                return `Key NFT "${nftData['nft-name']}" purchased successfully at 25 ADA!`;
+            },
+            extract: () => {
+                return `<br>All extractions will come after the soldout or after 48hrs if not soldout`;
+            },
+            generateBrokers: () => {
+                if (alonzo.brokers.length >= alonzo.maxBrokers) return; // Don't generate if max reached
+                for (let i = 1; i <= alonzo.maxBrokers; i++) {
+                    alonzo.brokers.push(`Alonzo Broker ${i}`);
+                }
+            },
+            chat: async (message) => {
+                if (!alonzo.isConnected) {
+                    if (alonzo.disconnectedChatCount >= alonzo.maxDisconnectedChats) {
+                        return `I've reached my limit of ${alonzo.maxDisconnectedChats} messages while disconnected. Please connect using 'connect [api_key]' to continue chatting.`;
+                    }
+                    alonzo.disconnectedChatCount++;
+                    alonzo.print(`Chat messages remaining while disconnected: ${alonzo.maxDisconnectedChats - alonzo.disconnectedChatCount}`);
+                }
+                
+                alonzo.print(`User: ${message}`);
+                const aiResponse = await getAIResponse(message);
+                return `Alonzo AI: ${aiResponse}`;
+            }
+        };
+
+        // --- Event Handlers ---
+
+        submitButton.addEventListener('click', () => {
+            const command = commandInput.value.trim();
+            if (command) {
+                processCommand(command);
+            }
+            commandInput.value = '';
+            commandInput.focus();
+        });
+
+        commandInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                const command = commandInput.value.trim();
+                if (command) {
+                    processCommand(command);
+                }
+                commandInput.value = '';
+                commandInput.focus();
+            }
+        });
+
+
+
+        nftForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Get the form data
+            const nftData = {
+                'nft-name': document.getElementById('nft-name').value,
+                'nft-description': document.getElementById('nft-description').value,
+                'nft-image': document.getElementById('nft-image').value,
+                'nft-metadata': document.getElementById('nft-metadata').value,
+            };
+
+            // Process the NFT submission using the alonzo object
+            const response = alonzo.processNftSubmission(nftData);
+            alonzo.print(response);
+
+            // Reset the form
+            nftForm.reset();
+            nftForm.classList.remove('show-nft-form'); // Hide form after submission
+
+        });
+
+
+        // Add this to your CSS
+        const newStyles = `
+            @keyframes thinking {
+                0% { opacity: 0.3; }
+                50% { opacity: 1; }
+                100% { opacity: 0.3; }
+            }
+            .thinking {
+                animation: thinking 1.5s infinite;
+                color: #00aa00;
+            }
+        `;
+
+        // Add the styles to the document
+        const styleSheet = document.createElement("style");
+        styleSheet.textContent = newStyles;
+        document.head.appendChild(styleSheet);
+
+        async function processCommand(input) {
+            const thinkingId = `thinking-${Date.now()}`;
+            alonzo.print(`<span id="${thinkingId}" class="thinking">Alonzo AI is thinking...</span>`);
+            
+            const parts = input.split(' ');
+            const command = parts[0].toLowerCase();
+            const args = parts.slice(1);
+
+            let response = '';
+            
+            switch (command) {
+                case 'connect':
+                    response = alonzo.connect(args[0]);
+                    break;
+                case 'disconnect':
+                    response = alonzo.disconnect();
+                    break;
+                case 'list_traders':
+                    response = alonzo.list_traders();
+                    break;
+                case 'copy':
+                    response = alonzo.copy(args[0], args[1]);
+                    break;
+                case 'stop_copy':
+                    response = alonzo.stop_copy(args[0]);
+                    break;
+                case 'status':
+                    response = alonzo.status();
+                    break;
+                case 'logs':
+                    response = alonzo.logs();
+                    break;
+                case 'analyze':
+                    response = alonzo.analyze(args[0], args[1]);
+                    break;
+                case 'help':
+                    response = alonzo.help();
+                    break;
+                case 'buy_nft':
+                    response = alonzo.buy_nft();
+                    break;
+                case 'extract':
+                    response = alonzo.extract();
+                    break;
+                case 'chat':
+                    const message = args.join(' ');
+                    if (!message) {
+                        response = `Error: Please provide a message to chat. Use: chat [your message]`;
+                    } else {
+                        response = await alonzo.chat(message);
+                    }
+                    break;
+                default:
+                    // Try to get AI response for unknown commands
+                    response = await alonzo.chat(input);
+            }
+            
+            // Remove thinking animation after response
+            const thinkingElement = document.getElementById(thinkingId);
+            if (thinkingElement) {
+                thinkingElement.remove();
+            }
+            
+            alonzo.print(response);
+        }
+
+        // --- Initial Setup (Optional) ---
+        alonzo.print('Welcome to ALONZO AI AGENT<br>');
+        alonzo.print("Type 'help' to see available commands.<br>");
+        commandInput.focus(); // Focus input on load
+
+    </script>
+    <div id="policy-id-container">
+        <span class="policy-id-label">Policy ID:</span>
+        <span class="policy-id-value" id="policy-id">bfcd9cedab371df7076b9934e4ecb68c3b2ff6154b852373ab51bd87</span>
+    </div>
+    <div class="copied-tooltip" id="copied-tooltip">Policy ID copied!</div>
+
+    <script>
+        const policyIdContainer = document.getElementById('policy-id-container');
+        const policyId = document.getElementById('policy-id');
+        const copiedTooltip = document.getElementById('copied-tooltip');
+
+        // Click to copy functionality
+        policyId.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(policyId.textContent);
+                copiedTooltip.style.display = 'block';
+                setTimeout(() => {
+                    copiedTooltip.style.display = 'none';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+        });
+
+        // Click to open website
+        policyIdContainer.addEventListener('click', () => {
+            // Replace this URL with your desired website
+            window.open('https://www.jpg.store/collection/bfcd9cedab371df7076b9934e4ecb68c3b2ff6154b852373ab51bd87', '_blank');
+        });
+    </script>
+</body>
+</html>
